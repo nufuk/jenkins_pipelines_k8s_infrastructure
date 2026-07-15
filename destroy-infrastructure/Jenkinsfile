@@ -5,9 +5,9 @@ pipeline {
     }
     environment {
         ARTIFACT_API_KEY = credentials('auth_bearer_artifact')
-        ARTIFACT_URL = ${env.artifact_url}
-        ARTIFACT_REPOSITORY = ${env.artifact_repository}
-        TF_VAR_proxmox_api_url = ${env.proxmox_url}
+        ARTIFACT_URL = "${env.artifact_url}"
+        ARTIFACT_REPOSITORY = "${env.artifact_repository}"
+        TF_VAR_proxmox_api_url = "${env.proxmox_url}"
         TF_VAR_proxmox_api_token_id = credentials('proxmox_api_token_id')
         TF_VAR_proxmox_api_token_secret = credentials('proxmox_api_token_secret')
         TF_VAR_proxmox_node1 = "pve1"
@@ -15,8 +15,8 @@ pipeline {
         TF_VAR_proxmox_node3 = "pve3"
         TF_VAR_vm_image_file_id = "local:import/Rocky10.cloud.qcow2"
         TF_VAR_container_template_file_id = "local:vztmpl/debian-12-turnkey-ansible_18.0-1_amd64.tar.gz"
-        TF_VAR_ssh_public_key = ${env.proxmox_ssh_public_key}
-        TF_VAR_ssh_public_key_jenkins = ${env.ssh_public_key_jenkins}
+        TF_VAR_ssh_public_key = "${env.proxmox_ssh_public_key}"
+        TF_VAR_ssh_public_key_jenkins = "${env.ssh_public_key_jenkins}"
         TF_VAR_ssh_private_key = credentials('ssh_private_key')
     }
     tools {
