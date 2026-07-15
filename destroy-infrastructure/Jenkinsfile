@@ -25,6 +25,20 @@ pipeline {
     }
 
     stages {
+        stage ('print variables') {
+            sh 'echo "The public: $ARTIFACT_API_KEY"'
+            sh 'echo "The public key is: $ARTIFACT_URL"'
+            sh 'echo "The public key is: $ARTIFACT_REPOSITORY"'
+            sh 'echo "The public key is: $TF_VAR_proxmox_api_url"'
+            sh 'echo "The public key is: $TF_VAR_proxmox_api_token_id"'
+            sh 'echo "The public key is: $TF_VAR_proxmox_api_token_secret"'
+            sh 'echo "The public key is: $TF_VAR_proxmox_node1"'
+            sh 'echo "The public key is: $TF_VAR_proxmox_node2"'
+            sh 'echo "The public key is: $TF_VAR_proxmox_node3"'
+            sh 'echo "The public key is: $TF_VAR_vm_image_file_id"'
+            sh 'echo "The public key is: $TF_VAR_ssh_public_key_jenkins"'
+            sh 'echo "The public key is: $TF_VAR_ssh_private_key"'
+        }
         stage('Checkout Source') {
             steps {
                 git branch: 'main',
