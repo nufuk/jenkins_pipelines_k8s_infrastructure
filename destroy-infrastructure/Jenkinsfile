@@ -27,18 +27,19 @@ pipeline {
     stages {
         stage ('print variables') {
             steps {
-                sh 'echo "The public: $ARTIFACT_API_KEY"'
-                sh 'echo "The public key is: $ARTIFACT_URL"'
-                sh 'echo "The public key is: $ARTIFACT_REPOSITORY"'
-                sh 'echo "The public key is: $TF_VAR_proxmox_api_url"'
-                sh 'echo "The public key is: $TF_VAR_proxmox_api_token_id"'
-                sh 'echo "The public key is: $TF_VAR_proxmox_api_token_secret"'
-                sh 'echo "The public key is: $TF_VAR_proxmox_node1"'
-                sh 'echo "The public key is: $TF_VAR_proxmox_node2"'
-                sh 'echo "The public key is: $TF_VAR_proxmox_node3"'
-                sh 'echo "The public key is: $TF_VAR_vm_image_file_id"'
-                sh 'echo "The public key is: $TF_VAR_ssh_public_key_jenkins"'
-                sh 'echo "The public key is: $TF_VAR_ssh_private_key"'
+                sh "echo 'ARTIFACT_API_KEY: ${ARTIFACT_API_KEY}'"
+                sh "echo 'ARTIFACT_URL: ${ARTIFACT_URL}'"
+                sh "echo 'ARTIFACT_REPOSITORY: ${ARTIFACT_REPOSITORY}'"
+                sh 'echo "TF_VAR_proxmox_api_url: $TF_VAR_proxmox_api_url"'
+                sh 'echo "TF_VAR_proxmox_api_token_id: $TF_VAR_proxmox_api_token_id"'
+                sh 'echo "TF_VAR_proxmox_api_token_secret: $TF_VAR_proxmox_api_token_secret"'
+                sh 'echo "TF_VAR_proxmox_node1: $TF_VAR_proxmox_node1"'
+                sh 'echo "TF_VAR_proxmox_node2: $TF_VAR_proxmox_node2"'
+                sh 'echo "TF_VAR_proxmox_node3: $TF_VAR_proxmox_node3"'
+                sh 'echo "TF_VAR_vm_image_file_id: $TF_VAR_vm_image_file_id"'
+                sh 'echo "TF_VAR_ssh_public_key: $TF_VAR_ssh_public_key"'
+                sh 'echo "TF_VAR_ssh_public_key_jenkins: $TF_VAR_ssh_public_key_jenkins"'
+                sh 'echo "TF_VAR_ssh_private_key: $TF_VAR_ssh_private_key"'
             }
         }
         stage('Checkout Source') {
