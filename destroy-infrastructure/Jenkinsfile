@@ -1,7 +1,7 @@
 pipeline {
     agent any
     options {
-        ansiColor('xterm') // Aktiviert die Farbdarstellung für die gesamte Pipeline
+        ansiColor("xterm") // Aktiviert die Farbdarstellung für die gesamte Pipeline
     }
     environment {
         ARTIFACT_API_KEY = credentials('auth_bearer_artifact')
@@ -20,8 +20,7 @@ pipeline {
         TF_VAR_ssh_private_key = credentials('ssh_private_key')
     }
     tools {
-        //terraform 'terraform_1.15.8'
-        terraform 'opentofu_1.12.3'
+        terraform "opentofu_1.12.3"
     }
 
     stages {

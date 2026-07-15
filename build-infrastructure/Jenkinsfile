@@ -1,7 +1,7 @@
 pipeline {
     agent any
     options {
-        ansiColor('xterm') // Aktiviert die Farbdarstellung für die gesamte Pipeline
+        ansiColor("xterm") // Aktiviert die Farbdarstellung für die gesamte Pipeline
     }
     environment {
         ARTIFACT_API_KEY = credentials('auth_bearer_artifact')
@@ -20,55 +20,54 @@ pipeline {
         TF_VAR_ssh_private_key = credentials('ssh_private_key')
     }
     tools {
-        //terraform 'terraform_1.15.8'
-        terraform 'opentofu_1.12.3'
+        terraform "opentofu_1.12.3"
     }
 
     stages {
-        stage('Checkout Source') {
+        stage("Checkout Source") {
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/nufuk/proxmox_terraform.git'
+                git branch: "main",
+                    url: "https://github.com/nufuk/proxmox_terraform.git"
             }
         }
         
-        stage ('pull_tfstate') {
+        stage ("pull_tfstate") {
             steps {
-                sh 'pwd; ls -la;'
-                sh 'curl -k -H "Authorization: Bearer ${ARTIFACT_API_KEY}" ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/download/terraform.tfstate > terraform.tfstate'
+                sh "pwd; ls -la;"
+                sh "curl -k -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/download/terraform.tfstate > terraform.tfstate"
             }
         }
         
-        stage('Init') {
+        stage("Init") {
             steps {
-                    sh 'tofu version'
-                    sh 'tofu init'
+                    sh "tofu version"
+                    sh "tofu init"
             }
         }
         
-        stage('Validate') {
+        stage("Validate") {
             steps {
-                    sh 'tofu validate'
+                    sh "tofu validate"
             }
         }
 
-        stage('Plan') {
+        stage("Plan") {
             steps {
-                sh 'tofu plan -state=terraform.tfstate'
+                sh "tofu plan -state=terraform.tfstate"
             }
         }
 
-        stage('Apply') {
+        stage("Apply") {
             steps {
-                input message: 'Apply the Terraform plan?', ok: 'Apply'
-                sh 'tofu apply -auto-approve'
+                input message: "Apply the Terraform plan?", ok: "Apply"
+                sh "tofu apply -auto-approve"
             }
         }
-        stage('update_tfstate') {
+        stage("update_tfstate") {
             steps {
-                sh 'ls -la'
-                sh 'curl -k -X DELETE -H "Authorization: Bearer ${ARTIFACT_API_KEY}" ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate'
-                sh 'curl -k -X PUT -H "Authorization: Bearer ${ARTIFACT_API_KEY}" --data-binary @"terraform.tfstate" ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate'
+                sh "ls -la"
+                sh "curl -k -X DELETE -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
+                sh "curl -k -X PUT -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' -T terraform.tfstate ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
             }
         }
     }
