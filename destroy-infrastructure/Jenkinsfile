@@ -25,67 +25,50 @@ pipeline {
     }
 
     stages {
-        stage ('print variables') {
+        stage("Checkout Source") {
             steps {
-                sh "echo 'ARTIFACT_API_KEY: ${ARTIFACT_API_KEY}'"
-                sh "echo 'ARTIFACT_URL: ${ARTIFACT_URL}'"
-                sh "echo 'ARTIFACT_REPOSITORY: ${ARTIFACT_REPOSITORY}'"
-                sh 'echo "TF_VAR_proxmox_api_url: $TF_VAR_proxmox_api_url"'
-                sh 'echo "TF_VAR_proxmox_api_token_id: $TF_VAR_proxmox_api_token_id"'
-                sh 'echo "TF_VAR_proxmox_api_token_secret: $TF_VAR_proxmox_api_token_secret"'
-                sh 'echo "TF_VAR_proxmox_node1: $TF_VAR_proxmox_node1"'
-                sh 'echo "TF_VAR_proxmox_node2: $TF_VAR_proxmox_node2"'
-                sh 'echo "TF_VAR_proxmox_node3: $TF_VAR_proxmox_node3"'
-                sh 'echo "TF_VAR_vm_image_file_id: $TF_VAR_vm_image_file_id"'
-                sh 'echo "TF_VAR_ssh_public_key: $TF_VAR_ssh_public_key"'
-                sh 'echo "TF_VAR_ssh_public_key_jenkins: $TF_VAR_ssh_public_key_jenkins"'
-                sh 'echo "TF_VAR_ssh_private_key: $TF_VAR_ssh_private_key"'
-            }
-        }
-        stage('Checkout Source') {
-            steps {
-                git branch: 'main',
-                    url: 'https://github.com/nufuk/proxmox_terraform.git'
+                git branch: "main",
+                    url: "https://github.com/nufuk/proxmox_terraform.git"
             }
         }
         
-        stage ('pull_tfstate') {
+        stage ("pull_tfstate") {
             steps {
-                sh 'pwd; ls -la;'
-                sh 'curl -k -H "Authorization: Bearer ${ARTIFACT_API_KEY}" ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/download/terraform.tfstate > terraform.tfstate'
+                sh "pwd; ls -la;"
+                sh "curl -k -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/download/terraform.tfstate > terraform.tfstate"
             }
         }
         
-        stage('Init') {
+        stage("Init") {
             steps {
-                    sh 'tofu version'
-                    sh 'tofu init'
+                    sh "tofu version"
+                    sh "tofu init"
             }
         }
         
-        stage('Validate') {
+        stage("Validate") {
             steps {
-                    sh 'tofu validate'
+                    sh "tofu validate"
             }
         }
 
-        stage('Plan') {
+        stage("Plan") {
             steps {
-                sh 'tofu plan -destroy -state=terraform.tfstate'
+                sh "tofu plan -destroy -state=terraform.tfstate"
             }
         }
 
-        stage('Apply') {
+        stage("Apply") {
             steps {
-                input message: 'Apply the Terraform plan?', ok: 'Apply'
-                sh 'tofu destroy -auto-approve'
+                input message: "Apply the Terraform plan?", ok: "Apply"
+                sh "tofu destroy -auto-approve"
             }
         }
-        stage('update_tfstate') {
+        stage("update_tfstate") {
             steps {
-                sh 'ls -la'
-                sh 'curl -k -X DELETE -H "Authorization: Bearer ${ARTIFACT_API_KEY}" ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate'
-                sh 'curl -k -X PUT -H "Authorization: Bearer ${ARTIFACT_API_KEY}" --data-binary @"terraform.tfstate" ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate'
+                sh "ls -la"
+                sh "curl -k -X DELETE -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
+                sh "curl -k -X PUT -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' --data-binary @"terraform.tfstate" ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
             }
         }
     }
