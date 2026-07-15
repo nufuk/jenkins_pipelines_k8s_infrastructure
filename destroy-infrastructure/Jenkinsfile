@@ -68,7 +68,7 @@ pipeline {
             steps {
                 sh "ls -la"
                 sh "curl -k -X DELETE -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
-                sh "curl -k -X PUT -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' --data-binary @"terraform.tfstate" ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
+                sh "curl -k -X PUT -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' -T terraform.tfstate ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
             }
         }
     }
