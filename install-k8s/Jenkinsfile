@@ -1,22 +1,22 @@
 pipeline {
     agent any
     options {
-        ansiColor('xterm') // Aktiviert die Farbdarstellung für die gesamte Pipeline
+        ansiColor("xterm") // Aktiviert die Farbdarstellung für die gesamte Pipeline
     }
     tools {
-        ansible 'ansible_14.1.0'
+        ansible "ansible_14.1.0"
     }
     stages {
-        stage('Checkout Source') {
+        stage("Checkout Source") {
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/nufuk/ansible_playbooks.git'
+                git branch: "main",
+                    url: "https://github.com/nufuk/ansible_playbooks_k8s.git"
             }
         }
-        stage('Run Ansible Playbook') {
+        stage("Run Ansible Playbook") {
             steps {
                 ansiblePlaybook( 
-                    playbook: 'site.yml'
+                    playbook: "site.yml"
                 )
             }
         }
