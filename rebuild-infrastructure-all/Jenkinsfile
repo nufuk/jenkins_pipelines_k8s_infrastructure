@@ -1,0 +1,109 @@
+pipeline {
+    agent any
+    options {
+        ansiColor("xterm") // Aktiviert die Farbdarstellung für die gesamte Pipeline
+    }
+    environment {
+        ARTIFACT_API_KEY = credentials('auth_bearer_artifact')
+        ARTIFACT_URL = "${env.artifact_url}"
+        ARTIFACT_REPOSITORY = "${env.artifact_repository}"
+        TF_VAR_proxmox_api_url = "${env.proxmox_url}"
+        TF_VAR_proxmox_api_token_id = credentials('proxmox_api_token_id')
+        TF_VAR_proxmox_api_token_secret = credentials('proxmox_api_token_secret')
+        TF_VAR_proxmox_node1 = "pve1"
+        TF_VAR_proxmox_node2 = "pve2"
+        TF_VAR_proxmox_node3 = "pve3"
+        TF_VAR_vm_image_file_id = "local:import/Rocky10.cloud.qcow2"
+        TF_VAR_container_template_file_id = "local:vztmpl/debian-12-turnkey-ansible_18.0-1_amd64.tar.gz"
+        TF_VAR_ssh_public_key = "${env.proxmox_ssh_public_key}"
+        TF_VAR_ssh_public_key_jenkins = "${env.ssh_public_key_jenkins}"
+        TF_VAR_ssh_private_key = credentials('ssh_private_key')
+    }
+    tools {
+        terraform "opentofu_1.12.3"
+    }
+
+    stages {
+        stage("Checkout OpenTofu Source") {
+            steps {
+                git branch: "main",
+                    url: "https://github.com/nufuk/proxmox_terraform.git"
+            }
+        }
+        
+        stage ("pull_tfstate") {
+            steps {
+                sh "pwd; ls -la;"
+                sh "curl -k -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/download/terraform.tfstate > terraform.tfstate"
+            }
+        }
+        
+        stage("Init") {
+            steps {
+                    sh "tofu version"
+                    sh "tofu init"
+            }
+        }
+        
+        stage("Validate") {
+            steps {
+                    sh "tofu validate"
+            }
+        }
+
+        stage("Plan destroy") {
+            steps {
+                sh "tofu plan -destroy -state=terraform.tfstate"
+            }
+        }
+
+        stage("Apply destroy") {
+            steps {
+                input message: "Apply the destruction Terraform plan?", ok: "Apply"
+                sh "tofu destroy -auto-approve"
+            }
+        }
+        stage("update destroyed tfstate") {
+            steps {
+                sh "ls -la"
+                sh "curl -k -X DELETE -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
+                sh "curl -k -X PUT -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' -T terraform.tfstate ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
+            }
+        }
+
+        stage("Plan new infrastructure") {
+            steps {
+                sh "tofu plan -state=terraform.tfstate"
+            }
+        }
+
+        stage("Apply new infra") {
+            steps {
+                input message: "Apply the building Terraform plan?", ok: "Apply"
+                sh "tofu apply -auto-approve"
+            }
+        }
+        stage("update new built tfstate") {
+            steps {
+                sh "ls -la"
+                sh "curl -k -X DELETE -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
+                sh "curl -k -X PUT -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' -T terraform.tfstate ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
+            }
+        }
+
+        stage("Checkout Ansible Source") {
+            steps {
+                git branch: "main",
+                    url: "https://github.com/nufuk/ansible_playbooks_k8s.git"
+            }
+        }
+        stage("Run Ansible Playbook") {
+            steps {
+                ansiblePlaybook( 
+                    playbook: "site.yml"
+                )
+            }
+        }
+    }
+}
+
