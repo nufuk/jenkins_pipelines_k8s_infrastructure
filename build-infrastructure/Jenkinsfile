@@ -63,13 +63,12 @@ pipeline {
             steps {
                 input message: "Apply the Terraform plan?", ok: "Apply"
                 sh "tofu apply -auto-approve"
+                TFSTATE = sh(returnStdout: true, script: 'echo terraform.tfstate')
             }
         }
         stage("update_tfstate") {
-            steps {
-                sh "ls -la"
-                TFSTATE = sh(returnStdout: true, script: 'echo terraform.tfstate')
-                env.terraform_tfstate  = TFSTATE
+            script {
+                env.terraform_tfstate  = ${TFSTATE}
                 //sh "curl -k -X DELETE -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
                 //sh "curl -k -X PUT -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' -T terraform.tfstate ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
             }
