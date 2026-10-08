@@ -35,7 +35,8 @@ pipeline {
         stage ("pull_tfstate") {
             steps {
                 sh "pwd; ls -la;"
-                writeFile(file: 'terraform.tfstate', text: TFSTATE)
+                writeJSON file: 'terraform.tfstate', json: TFSTATE
+                //writeFile(file: 'terraform.tfstate', text: TFSTATE)
                 sh "echo ${TFSTATE} > terraform.tfstate"
                 //sh "curl -k -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/download/terraform.tfstate > terraform.tfstate"
             }
@@ -72,7 +73,8 @@ pipeline {
         stage('Save Variable for next run'){
             steps {
                 script {
-                    def TFSTATE = readFile(file: 'terraform.tfstate')
+                    def TFSTATE = readJSON file: 'terraform.tfstate'
+                    //def TFSTATE = readFile(file: 'terraform.tfstate')
                     properties([
                         parameters([
                             string(defaultValue: "${TFSTATE}", description: 'Terraform tfstate file', name: 'terraform.tfstate', trim: true)
