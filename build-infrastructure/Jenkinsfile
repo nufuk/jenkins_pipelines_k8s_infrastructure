@@ -18,7 +18,6 @@ pipeline {
         TF_VAR_ssh_public_key = "${env.proxmox_ssh_public_key}"
         TF_VAR_ssh_public_key_jenkins = "${env.ssh_public_key_jenkins}"
         TF_VAR_ssh_private_key = credentials('ssh_private_key')
-        TFSTATE = "${env.terraform_tfstate}"
     }
     tools {
         terraform "opentofu_1.12.3"
@@ -35,59 +34,46 @@ pipeline {
         stage ("pull_tfstate") {
             steps {
                 sh "pwd; ls -la;"
-                writeJSON file: 'terraform.tfstate', json: TFSTATE
                 //writeFile(file: 'terraform.tfstate', text: TFSTATE)
-                sh "echo ${TFSTATE} > terraform.tfstate"
                 //sh "curl -k -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/download/terraform.tfstate > terraform.tfstate"
             }
         }
         
         stage("Init") {
             steps {
+                dir('/var/jenkins/terraform-state') {
                     sh "tofu version"
                     sh "tofu init"
+                }
             }
         }
         
         stage("Validate") {
             steps {
+                dir('/var/jenkins/terraform-state') {
                     sh "tofu validate"
+                }
             }
         }
 
         stage("Plan") {
             steps {
-                sh "tofu plan -state=terraform.tfstate"
+                dir('/var/jenkins/terraform-state') {
+                    sh "tofu plan -state=terraform.tfstate"
+                }
             }
         }
 
         stage("Apply") {
             steps {
-                input message: "Apply the Terraform plan?", ok: "Apply"
-                sh "tofu apply -auto-approve"
-            }
-        }
-//        environment {
-//                    TFSTATE = sh(returnStdout: true, script: 'echo terraform.tfstate')
-//        }
-        stage('Save Variable for next run'){
-            steps {
-                script {
-                    def TFSTATE = readJSON file: 'terraform.tfstate'
-                    //def TFSTATE = readFile(file: 'terraform.tfstate')
-                    properties([
-                        parameters([
-                            string(defaultValue: "${TFSTATE}", description: 'Terraform tfstate file', name: 'terraform.tfstate', trim: true)
-                        ])
-                    ])
+                dir('/var/jenkins/terraform-state') {
+                    input message: "Apply the Terraform plan?", ok: "Apply"
+                    sh "tofu apply -auto-approve"
                 }
             }
         }
         /*stage("update_tfstate") {
             steps {
-                script {
-                    env.terraform_tfstate  = ${TFSTATE}
-                }
                 //sh "curl -k -X DELETE -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
                 //sh "curl -k -X PUT -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' -T terraform.tfstate ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
             }
