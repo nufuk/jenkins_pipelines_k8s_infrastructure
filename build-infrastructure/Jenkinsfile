@@ -65,7 +65,7 @@ pipeline {
                 sh "tofu apply -auto-approve"
             }
         }
-        stage {
+        stage("store_tfstate") {
             steps {
                 environment {
                     TFSTATE = sh(returnStdout: true, script: 'echo terraform.tfstate')
