@@ -40,35 +40,27 @@ pipeline {
         
         stage("Init") {
             steps {
-                dir('/var/jenkins/terraform-state') {
-                    sh "tofu version"
-                    sh "tofu init"
-                }
+                sh "tofu version"
+                sh "tofu init"
             }
         }
         
         stage("Validate") {
             steps {
-                dir('/var/jenkins/terraform-state') {
-                    sh "tofu validate"
-                }
+                sh "tofu validate -state=/opt/jenkins/tfstate/terraform.tfstate"
             }
         }
 
         stage("Plan") {
             steps {
-                dir('/var/jenkins/terraform-state') {
-                    sh "tofu plan -destroy -state=terraform.tfstate"
-                }
+                sh "tofu plan -destroy -state=/opt/jenkins/tfstate/terraform.tfstate -out=tfplan"
             }
         }
 
         stage("Apply") {
             steps {
-                dir('/var/jenkins/terraform-state') {
-                    input message: "Apply the Terraform plan?", ok: "Apply"
-                    sh "tofu destroy -auto-approve"
-                }
+                input message: "Apply the Terraform plan?", ok: "Apply"
+                sh "tofu plan destroy tfplan -state=/opt/jenkins/tfstate/terraform.tfstate -auto-approve"
             }
         }
         stage("update_tfstate") {
