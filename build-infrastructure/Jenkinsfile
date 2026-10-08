@@ -18,6 +18,7 @@ pipeline {
         TF_VAR_ssh_public_key = "${env.proxmox_ssh_public_key}"
         TF_VAR_ssh_public_key_jenkins = "${env.ssh_public_key_jenkins}"
         TF_VAR_ssh_private_key = credentials('ssh_private_key')
+        TFSTATE = "${env.terraform_tfstate}"
     }
     tools {
         terraform "opentofu_1.12.3"
@@ -34,7 +35,8 @@ pipeline {
         stage ("pull_tfstate") {
             steps {
                 sh "pwd; ls -la;"
-                sh "curl -k -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/download/terraform.tfstate > terraform.tfstate"
+                sh "echo ${TFSTATE} > terraform.tfstate"
+                //sh "curl -k -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/download/terraform.tfstate > terraform.tfstate"
             }
         }
         
@@ -66,8 +68,10 @@ pipeline {
         stage("update_tfstate") {
             steps {
                 sh "ls -la"
-                sh "curl -k -X DELETE -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
-                sh "curl -k -X PUT -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' -T terraform.tfstate ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
+                TFSTATE = sh(returnStdout: true, script: 'echo terraform.tfstate')
+                env.terraform_tfstate  = TFSTATE
+                //sh "curl -k -X DELETE -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
+                //sh "curl -k -X PUT -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' -T terraform.tfstate ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
             }
         }
     }
