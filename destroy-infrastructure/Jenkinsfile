@@ -60,7 +60,7 @@ pipeline {
         stage("Apply") {
             steps {
                 input message: "Apply the Terraform plan?", ok: "Apply"
-                sh "tofu apply tfplan -auto-approve"
+                sh "tofu apply tfplan"
             }
         }
         stage("update_tfstate") {
