@@ -67,7 +67,7 @@ pipeline {
             }
         }
         stage("update_tfstate") {
-            script {
+            steps {
                 script {
                     env.terraform_tfstate  = ${TFSTATE}
                 }
