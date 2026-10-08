@@ -35,6 +35,7 @@ pipeline {
         stage ("pull_tfstate") {
             steps {
                 sh "pwd; ls -la;"
+                writeFile(file: 'terraform.tfstate', text: TFSTATE)
                 sh "echo ${TFSTATE} > terraform.tfstate"
                 //sh "curl -k -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/download/terraform.tfstate > terraform.tfstate"
             }
@@ -65,10 +66,22 @@ pipeline {
                 sh "tofu apply -auto-approve"
             }
         }
-        environment {
-                    TFSTATE = sh(returnStdout: true, script: 'echo terraform.tfstate')
+//        environment {
+//                    TFSTATE = sh(returnStdout: true, script: 'echo terraform.tfstate')
+//        }
+        stage('Save Variable for next run'){
+            steps {
+                script {
+                    def TFSTATE = readFile(file: 'terraform.tfstate')
+                    properties([
+                        parameters([
+                            string(defaultValue: "${TFSTATE}", description: 'Terraform tfstate file', name: 'terraform.tfstate', trim: true)
+                        ])
+                    ])
+                }
+            }
         }
-        stage("update_tfstate") {
+        /*stage("update_tfstate") {
             steps {
                 script {
                     env.terraform_tfstate  = ${TFSTATE}
@@ -76,7 +89,7 @@ pipeline {
                 //sh "curl -k -X DELETE -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
                 //sh "curl -k -X PUT -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' -T terraform.tfstate ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
             }
-        }
+        }*/
     }
 }
 
