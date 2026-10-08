@@ -63,7 +63,13 @@ pipeline {
             steps {
                 input message: "Apply the Terraform plan?", ok: "Apply"
                 sh "tofu apply -auto-approve"
-                TFSTATE = sh(returnStdout: true, script: 'echo terraform.tfstate')
+            }
+        }
+        stage {
+            steps {
+                environment {
+                    TFSTATE = sh(returnStdout: true, script: 'echo terraform.tfstate')
+                }
             }
         }
         stage("update_tfstate") {
