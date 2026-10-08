@@ -34,40 +34,48 @@ pipeline {
         stage ("pull_tfstate") {
             steps {
                 sh "pwd; ls -la;"
-                sh "curl -k -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/download/terraform.tfstate > terraform.tfstate"
+                //sh "curl -k -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/download/terraform.tfstate > terraform.tfstate"
             }
         }
         
         stage("Init") {
             steps {
+                dir('/var/jenkins/terraform-state') {
                     sh "tofu version"
                     sh "tofu init"
+                }
             }
         }
         
         stage("Validate") {
             steps {
+                dir('/var/jenkins/terraform-state') {
                     sh "tofu validate"
+                }
             }
         }
 
         stage("Plan") {
             steps {
-                sh "tofu plan -destroy -state=terraform.tfstate"
+                dir('/var/jenkins/terraform-state') {
+                    sh "tofu plan -destroy -state=terraform.tfstate"
+                }
             }
         }
 
         stage("Apply") {
             steps {
-                input message: "Apply the Terraform plan?", ok: "Apply"
-                sh "tofu destroy -auto-approve"
+                dir('/var/jenkins/terraform-state') {
+                    input message: "Apply the Terraform plan?", ok: "Apply"
+                    sh "tofu destroy -auto-approve"
+                }
             }
         }
         stage("update_tfstate") {
             steps {
                 sh "ls -la"
-                sh "curl -k -X DELETE -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
-                sh "curl -k -X PUT -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' -T terraform.tfstate ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
+                //sh "curl -k -X DELETE -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
+                //sh "curl -k -X PUT -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' -T terraform.tfstate ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
             }
         }
     }
