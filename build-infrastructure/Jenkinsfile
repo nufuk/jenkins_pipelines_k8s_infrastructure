@@ -61,7 +61,7 @@ pipeline {
         stage("Apply") {
             steps {
                 input message: "Apply the Terraform plan?", ok: "Apply"
-                sh "tofu apply tfplan -state=/opt/jenkins/tfstate/terraform.tfstate -auto-approve"
+                sh "tofu apply tfplan -auto-approve"
             }
         }
         /*stage("update_tfstate") {
