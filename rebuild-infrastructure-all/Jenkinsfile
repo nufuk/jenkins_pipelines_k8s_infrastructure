@@ -67,6 +67,8 @@ pipeline {
         stage("update destroyed tfstate") {
             steps {
                 sh "ls -la"
+                sh "cp /opt/jenkins/terraform-state/terraform.tfstate /opt/jenkins/terraform-state/terraform.tfstate.last"
+                sh "cp ./terraform.tfstate /opt/jenkins/terraform-state/terraform.tfstate"
                 //sh "curl -k -X DELETE -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
                 //sh "curl -k -X PUT -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' -T terraform.tfstate ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
             }
@@ -87,6 +89,7 @@ pipeline {
         stage("update new built tfstate") {
             steps {
                 sh "ls -la"
+                sh "cp /opt/jenkins/terraform-state/terraform.tfstate /opt/jenkins/terraform-state/terraform.tfstate.last"
                 sh "cp ./terraform.tfstate /opt/jenkins/terraform-state/terraform.tfstate"
                 //sh "curl -k -X DELETE -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
                 //sh "curl -k -X PUT -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' -T terraform.tfstate ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
