@@ -53,14 +53,14 @@ pipeline {
 
         stage("Plan destroy") {
             steps {
-                sh "tofu plan -destroy -state=/opt/jenkins/tfstate/terraform.tfstate -out=tfplan"
+                sh "tofu plan -destroy -state=/opt/jenkins/tfstate/terraform.tfstate -out=tfplandestroy"
             }
         }
 
         stage("Apply destroy") {
             steps {
                 input message: "Apply the destruction Terraform plan?", ok: "Apply"
-                sh "tofu apply tfplan"
+                sh "tofu apply tfplandestroy"
             }
         }
         stage("update destroyed tfstate") {
