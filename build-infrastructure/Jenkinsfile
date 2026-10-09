@@ -53,7 +53,7 @@ pipeline {
 
         stage("Plan") {
             steps {
-                sh "tofu plan -state=/opt/jenkins/tfstate/terraform.tfstate -out=tfplan"
+                sh "tofu plan -state=/opt/jenkins/terraform-state/terraform.tfstate -out=tfplan"
             }
         }
 
