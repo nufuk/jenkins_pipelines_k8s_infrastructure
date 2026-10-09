@@ -34,7 +34,6 @@ pipeline {
         stage ("pull_tfstate") {
             steps {
                 sh "pwd; ls -la;"
-                //writeFile(file: 'terraform.tfstate', text: TFSTATE)
                 //sh "curl -k -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/download/terraform.tfstate > terraform.tfstate"
             }
         }

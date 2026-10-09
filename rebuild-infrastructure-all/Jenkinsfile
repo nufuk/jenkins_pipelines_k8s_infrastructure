@@ -34,60 +34,60 @@ pipeline {
         stage ("pull_tfstate") {
             steps {
                 sh "pwd; ls -la;"
-                sh "curl -k -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/download/terraform.tfstate > terraform.tfstate"
+                //sh "curl -k -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/download/terraform.tfstate > terraform.tfstate"
             }
         }
         
         stage("Init") {
             steps {
-                    sh "tofu version"
-                    sh "tofu init"
+                sh "tofu version"
+                sh "tofu init"
             }
         }
         
         stage("Validate") {
             steps {
-                    sh "tofu validate"
+                sh "tofu validate"
             }
         }
 
         stage("Plan destroy") {
             steps {
-                sh "tofu plan -destroy -state=terraform.tfstate"
+                sh "tofu plan -destroy -state=/opt/jenkins/tfstate/terraform.tfstate -out=tfplan"
             }
         }
 
         stage("Apply destroy") {
             steps {
                 input message: "Apply the destruction Terraform plan?", ok: "Apply"
-                sh "tofu destroy -auto-approve"
+                sh "tofu apply tfplan"
             }
         }
         stage("update destroyed tfstate") {
             steps {
                 sh "ls -la"
-                sh "curl -k -X DELETE -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
-                sh "curl -k -X PUT -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' -T terraform.tfstate ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
+                //sh "curl -k -X DELETE -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
+                //sh "curl -k -X PUT -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' -T terraform.tfstate ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
             }
         }
 
         stage("Plan new infrastructure") {
             steps {
-                sh "tofu plan -state=terraform.tfstate"
+                sh "tofu plan -state=/opt/jenkins/tfstate/terraform.tfstate -out=tfplan"
             }
         }
 
         stage("Apply new infra") {
             steps {
                 input message: "Apply the building Terraform plan?", ok: "Apply"
-                sh "tofu apply -auto-approve"
+                sh "tofu apply tfplan"
             }
         }
         stage("update new built tfstate") {
             steps {
                 sh "ls -la"
-                sh "curl -k -X DELETE -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
-                sh "curl -k -X PUT -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' -T terraform.tfstate ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
+                //sh "curl -k -X DELETE -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
+                //sh "curl -k -X PUT -H 'Authorization: Bearer ${ARTIFACT_API_KEY}' -T terraform.tfstate ${ARTIFACT_URL}${ARTIFACT_REPOSITORY}/artifacts/terraform.tfstate"
             }
         }
 
