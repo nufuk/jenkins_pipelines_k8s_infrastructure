@@ -60,7 +60,6 @@ pipeline {
         stage("Apply destroy") {
             steps {
                 input message: "Apply the destruction Terraform plan?", ok: "Apply"
-                sh "tofu refresh"
                 sh "tofu apply tfplandestroy"
             }
         }
@@ -81,7 +80,6 @@ pipeline {
         stage("Apply new infra") {
             steps {
                 input message: "Apply the building Terraform plan?", ok: "Apply"
-                sh "tofu refresh"
                 sh "tofu apply tfplan"
             }
         }
